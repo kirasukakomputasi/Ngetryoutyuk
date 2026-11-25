@@ -1,5 +1,6 @@
 <meta charset="utf-8">
 <title>Tryout PK dan PM</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@500;600;700&family=Space+Mono:wght@700&display=swap">
 <style>
@@ -277,6 +278,31 @@ table.dt td{background:var(--card)}
 .mx{display:inline-flex;align-items:center;vertical-align:middle;margin:0 3px}
 .mx .mg{display:grid;grid-template-columns:auto auto;gap:2px 14px;text-align:center;line-height:1.3}
 .mx .mb{font:300 2.7em/1 Georgia,serif;transform:scaleX(.55)}
+/* kalkulator PM */
+.calcbtn svg{width:18px;height:18px;vertical-align:-4px;margin-right:6px}
+.calcbtn[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.calc{position:fixed;z-index:50;left:0;top:0;width:292px;max-width:calc(100vw - 16px);background:var(--card);color:var(--ink);border:3px solid var(--ink);border-radius:18px;box-shadow:6px 6px 0 var(--sh)}
+.calc[hidden]{display:none}
+.calc-h{display:flex;align-items:center;gap:8px;padding:7px 8px 7px 14px;background:var(--pink);color:#1B1840;border-bottom:3px solid var(--ink);border-radius:14px 14px 0 0;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;font:800 15px var(--disp)}
+.calc-h.drag{cursor:grabbing}
+.calc-x{width:30px;height:30px;border:2.5px solid var(--ink);border-radius:8px;background:var(--card);color:var(--ink);font:800 16px/1 var(--disp);padding:0}
+.calc-d{margin:10px;padding:6px 12px 8px;border:3px solid var(--ink);border-radius:12px;background:var(--paper);text-align:right;min-height:80px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
+.calc-ex{font:700 14px var(--mono);color:var(--muted);min-height:22px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;scrollbar-width:none}
+.calc-ex::-webkit-scrollbar{display:none}
+.calc-r{font:700 28px/1.25 var(--mono);min-height:35px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;scrollbar-width:none}
+.calc-r::-webkit-scrollbar{display:none}
+.calc-r.err{font-size:16px;color:var(--bad);line-height:2.2}
+.calc-k{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;padding:0 10px 12px}
+.calc-k button{height:44px;border:2.5px solid var(--ink);border-radius:10px;background:var(--card);color:var(--ink);font:800 18px var(--disp);padding:0;box-shadow:2px 2px 0 var(--sh);touch-action:manipulation}
+.calc-k button:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--sh)}
+.calc-k .op{background:var(--lilac);color:#1B1840}
+.calc-k .fn{background:var(--hl)}
+.calc-k .eq{background:var(--yellow);color:var(--on-y)}
+.calc-k .cl{background:var(--pink);color:#1B1840}
+@media (max-width:640px){.calclab{display:none}.calcbtn svg{margin-right:0}.calc{width:276px}.calc-k button{height:42px}
+  .topbar .wrap{padding-left:max(10px,env(safe-area-inset-left,0px));padding-right:max(10px,env(safe-area-inset-right,0px))}
+  .bar{gap:6px}.bar .btn{padding:5px 8px;font-size:13px}.bar .chip{padding:2px 8px;font-size:12.5px}.bar .timer{min-width:0;padding:2px 8px;font-size:18px}}
+@media (max-width:340px){.bar .chip{display:none}}
 </style>
 <div id="topbar" class="topbar"></div>
 <main id="app"></main>
@@ -605,11 +631,12 @@ function isRight(q,v){if(q.tf){return !!v&&q.k.every(function(x,i){return v[i]==
 function grade(to,subj,ans){var Q=QZ(to,subj).q,ok=0,bad=0,bl=0;Q.forEach(function(q,i){var v=ans[i];if(!isAnswered(q,v))bl++;else if(isRight(q,v))ok++;else bad++;});return {ok:ok,bad:bad,blank:bl,score:Math.round(ok/Q.length*100)};}
 
 /* ===== Komponen ===== */
-function topbar(){
+function topbar(){topbar0();syncCalc();}
+function topbar0(){
   var el=$('#topbar');
   if(S.view==='exam'){
     var q=QZ(P.to,P.subj);
-    el.innerHTML='<div class="wrap bar"><span class="chip'+(P.subj==='PM'?' pm':'')+'">'+P.subj+' · TO'+P.to+'</span><span class="qn">Soal '+(P.cur+1)+' / '+q.q.length+'</span><span class="sp"></span><button class="btn ghost sm navtoggle" data-act="navopen">Nomor</button><div class="timer mono" id="tm" aria-live="off">--:--</div><button class="btn sm" data-act="finish">Kumpulkan</button></div><div class="prog"><i id="pg" style="width:0"></i></div>';
+    el.innerHTML='<div class="wrap bar"><span class="chip'+(P.subj==='PM'?' pm':'')+'">'+P.subj+' · TO'+P.to+'</span><span class="qn">Soal '+(P.cur+1)+' / '+q.q.length+'</span><span class="sp"></span>'+(P.subj==='PM'?'<button class="btn ghost sm calcbtn" data-act="calc" aria-pressed="'+CALC.open+'" aria-label="Kalkulator" title="Kalkulator">'+CALCICON+'<span class="calclab">Kalkulator</span></button>':'')+'<button class="btn ghost sm navtoggle" data-act="navopen">Nomor</button><div class="timer mono" id="tm" aria-live="off">--:--</div><button class="btn sm" data-act="finish">Kumpulkan</button></div><div class="prog"><i id="pg" style="width:0"></i></div>';
     return;
   }
   var cur=S.view==='history'?'riwayat':'beranda';
@@ -633,7 +660,7 @@ function renderHome(){
   var total=A.length,best=total?Math.max.apply(null,A.map(function(a){return a.score;})):'–';
   var res='';
   if(P){var left=Math.round((P.end-Date.now())/1000);res='<div class="resume"><div><b>Tryout '+P.subj+' (TO'+P.to+') belum selesai.</b> '+(left>0?'Sisa waktu '+fmt(left)+'.':'Waktu sudah habis.')+'</div><span class="sp"></span><button class="btn ghost sm" data-act="drop">Batalkan</button><button class="btn sm blue" data-act="resume">'+(left>0?'Lanjutkan':'Lihat hasil')+'</button></div>';}
-  $('#app').innerHTML='<div class="wrap"><div class="hero"><div><span class="stk">Tryout '+S.to+' · Pola UTBK 26/27</span><h1>Latihan PK &amp; PM sampai skormu <mark>naik</mark>.</h1><p class="lead">Kerjakan dengan timer sungguhan, cek pembahasannya, lalu ulangi sesukamu. Setiap percobaan masuk riwayat.</p></div><div class="statpile" aria-label="Ringkasan"><div class="stat s1"><b>'+total+'</b><span>percobaan</span></div><div class="stat s2"><b>'+best+'</b><span>skor tertinggi</span></div></div></div>'+res+tosw()+'<div class="subjects">'+subjCard('PK')+subjCard('PM')+'</div><div class="rules"><div class="rule"><b>Timer sungguhan</b>PK 20 menit dan PM 42,5 menit. Waktu habis, jawaban dikumpulkan otomatis.</div><div class="rule"><b>Cara hitung skor</b>Benar ÷ 20 × 100. Soal tabel dianggap benar kalau semua barisnya benar.</div><div class="rule"><b>Aman kalau keluar</b>Jawaban dan sisa waktu tersimpan, jadi bisa dilanjutkan.</div></div></div>';
+  $('#app').innerHTML='<div class="wrap"><div class="hero"><div><span class="stk">Tryout '+S.to+' · Pola UTBK 26/27</span><h1>Latihan PK &amp; PM sampai skormu <mark>naik</mark>.</h1><p class="lead">Kerjakan dengan timer sungguhan, cek pembahasannya, lalu ulangi sesukamu. Setiap percobaan masuk riwayat.</p></div><div class="statpile" aria-label="Ringkasan"><div class="stat s1"><b>'+total+'</b><span>percobaan</span></div><div class="stat s2"><b>'+best+'</b><span>skor tertinggi</span></div></div></div>'+res+tosw()+'<div class="subjects">'+subjCard('PK')+subjCard('PM')+'</div><div class="rules"><div class="rule"><b>Timer sungguhan</b>PK 20 menit dan PM 42,5 menit (PM ada kalkulator bawaan). Waktu habis, jawaban dikumpulkan otomatis.</div><div class="rule"><b>Cara hitung skor</b>Benar ÷ 20 × 100. Soal tabel dianggap benar kalau semua barisnya benar.</div><div class="rule"><b>Aman kalau keluar</b>Jawaban dan sisa waktu tersimpan, jadi bisa dilanjutkan.</div></div></div>';
 }
 function opts(q,v,mode){
   var h='';
@@ -790,6 +817,7 @@ document.addEventListener('click',function(e){
     case 'next':P.cur=Math.min(QZ(P.to,P.subj).q.length-1,P.cur+1);save();renderBody(true);break;
     case 'prev':P.cur=Math.max(0,P.cur-1);save();renderBody(true);break;
     case 'go':if(S.view==='exam'){P.cur=+d.i;navOpen=false;save();renderBody(true);}else{RV.i=+d.i;renderReview();window.scrollTo(0,0);}break;
+    case 'calc':toggleCalc();break;
     case 'navopen':navOpen=true;renderBody();break;
     case 'navclose':navOpen=false;renderBody();break;
     case 'finish':navOpen=false;confirmFinish();break;
@@ -807,6 +835,185 @@ document.addEventListener('input',function(e){var el=e.target;if(!el.classList||
 function renderBody(top){var y=window.scrollY;renderExam();if(!top)window.scrollTo(0,y);else window.scrollTo(0,0);}
 window.addEventListener('hashchange',function(){if(S.view==='exam')return;if(location.hash==='#riwayat')S.view='history';else if(location.hash==='#beranda')S.view='home';else return;render();});
 document.addEventListener('visibilitychange',tickNow);
+
+/* ===== Kalkulator PM ===== */
+var CALCICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2.5" width="16" height="19" rx="3"/><rect x="7.5" y="6" width="9" height="4" rx="1"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></svg>';
+var CALC=(function(){var o=lsGet('to_calc')||{};return {open:!!o.open,x:typeof o.x==='number'?o.x:null,y:typeof o.y==='number'?o.y:null,expr:'',eq:false,ans:null,err:'',el:null};})();
+var CKEYS=[
+  ['AC','clr','','cl','Hapus semua'],['⌫','bs','','fn','Hapus satu'],['(','lp','','fn','Kurung buka'],[')','rp','','fn','Kurung tutup'],
+  ['x²','sq','','fn','Kuadrat'],['√','sqrt','','fn','Akar kuadrat'],['^','op','^','op','Pangkat'],['÷','op','÷','op','Bagi'],
+  ['7','num','7','',''],['8','num','8','',''],['9','num','9','',''],['×','op','×','op','Kali'],
+  ['4','num','4','',''],['5','num','5','',''],['6','num','6','',''],['−','op','−','op','Kurang'],
+  ['1','num','1','',''],['2','num','2','',''],['3','num','3','',''],['+','op','+','op','Tambah'],
+  ['0','num','0','',''],[',','num',',','',  'Koma desimal'],['%','pct','','fn','Persen'],['=','eq','','eq','Sama dengan']
+];
+function calcFmt(v){
+  if(!isFinite(v))return 'Tak hingga';
+  var n=parseFloat(v.toPrecision(15)),s=String(n);
+  if(/e/i.test(s))s=n.toExponential().replace('e+','×10^').replace('e-','×10^−');
+  return s.replace('.',',').replace('-','−');
+}
+function calcEval(src){
+  var s=src.replace(/[+−×÷^]+$/,''),o=(s.match(/\(/g)||[]).length-(s.match(/\)/g)||[]).length;
+  while(o-->0)s+=')';
+  var T=s.match(/\d+(?:,\d+)?|,\d+|[+−×÷^%²√()]/g)||[],p=0;
+  function pk(){return T[p];}
+  function isNum(c){return c!==undefined&&/^[\d,]/.test(c);}
+  function ex(){var v=tm();while(pk()==='+'||pk()==='−'){var o2=T[p++],r=tm();v=o2==='+'?v+r:v-r;}return v;}
+  function tm(){
+    var v=un();
+    for(;;){
+      var c=pk();
+      if(c==='×'||c==='÷'){p++;var r=un();if(c==='÷'){if(r===0)throw 'Tidak bisa dibagi nol';v=v/r;}else v=v*r;}
+      else if(c==='('||c==='√'||isNum(c)){v=v*un();}
+      else break;
+    }
+    return v;
+  }
+  function un(){var c=pk();if(c==='−'){p++;return -un();}if(c==='+'){p++;return un();}return pw();}
+  function pw(){var b=po();if(pk()==='^'){p++;return Math.pow(b,un());}return b;}
+  function po(){var v=pr();while(pk()==='%'||pk()==='²'){v=T[p++]==='%'?v/100:v*v;}return v;}
+  function pr(){
+    var c=T[p++];
+    if(c===undefined)throw 'Belum lengkap';
+    if(c==='('){var v=ex();if(pk()===')')p++;else throw 'Belum lengkap';return v;}
+    if(c==='√'){var x=pr();if(x<0)throw 'Akar bilangan negatif';return Math.sqrt(x);}
+    if(isNum(c))return parseFloat(c.replace(',','.'));
+    throw 'Belum lengkap';
+  }
+  try{
+    if(!T.length)return {ok:false,err:''};
+    var v=ex();
+    if(p<T.length)throw 'Belum lengkap';
+    if(!isFinite(v)||isNaN(v))throw 'Hasil tidak terdefinisi';
+    return {ok:true,v:v};
+  }catch(e){return {ok:false,err:typeof e==='string'?e:'Belum lengkap'};}
+}
+function calcShow(){
+  var el=CALC.el;if(!el)return;
+  var ex=el.querySelector('.calc-ex'),r=el.querySelector('.calc-r'),txt='',cls='calc-r';
+  ex.textContent=CALC.expr+(CALC.eq&&CALC.expr?' =':'');
+  if(CALC.eq){
+    if(typeof CALC.ans==='number')txt=calcFmt(CALC.ans);else{txt=CALC.err||'Belum lengkap';cls+=' err';}
+  }else if(CALC.expr){
+    var pv=calcEval(CALC.expr);if(pv.ok)txt=calcFmt(pv.v);
+  }else txt='0';
+  r.className=cls;r.textContent=txt;
+  ex.scrollLeft=ex.scrollWidth;r.scrollLeft=0;
+}
+function calcPress(t,v){
+  var C=CALC,e,last,DIG=/[0-9,%²)]$/;
+  if(t==='clr'){C.expr='';C.eq=false;C.ans=null;C.err='';return calcShow();}
+  if(t==='eq'){
+    if(C.eq||!C.expr)return;
+    var r=calcEval(C.expr);C.ans=r.ok?r.v:null;C.err=r.ok?'':(r.err||'Belum lengkap');C.eq=true;return calcShow();
+  }
+  if(C.eq){
+    var keep=(t==='op'||t==='pct'||t==='sq')&&typeof C.ans==='number';
+    C.eq=false;
+    if(keep)C.expr=calcFmt(C.ans);else if(t!=='bs')C.expr='';
+  }
+  e=C.expr;last=e.slice(-1);
+  if(t==='bs'){e=e.slice(-2)==='√('?e.slice(0,-2):e.slice(0,-1);}
+  else if(t==='num'){
+    if(v===','){
+      var m=e.match(/[0-9,]*$/)[0];
+      if(m.indexOf(',')>=0)return calcShow();
+      if(!m)e+=(/[%²)]$/.test(e)?'×':'')+'0';
+      e+=',';
+    }else{if(/[%²)]$/.test(e))e+='×';e+=v;}
+  }
+  else if(t==='op'){
+    if(e===''||last==='('){if(v==='−')e+=v;}
+    else if('+−×÷^'.indexOf(last)>=0){
+      if(v==='−'&&'×÷^'.indexOf(last)>=0)e+=v;
+      else{var b=e.replace(/[+−×÷^]+$/,'');e=(b===''||b.slice(-1)==='(')?(v==='−'?b+v:b):b+v;}
+    }
+    else e+=v;
+  }
+  else if(t==='pct'||t==='sq'){if(DIG.test(e)&&last!==',')e+=(t==='pct'?'%':'²');}
+  else if(t==='lp'){if(/[0-9,%²)]$/.test(e))e+='×';e+='(';}
+  else if(t==='sqrt'){if(/[0-9,%²)]$/.test(e))e+='×';e+='√(';}
+  else if(t==='rp'){
+    var open=(e.match(/\(/g)||[]).length-(e.match(/\)/g)||[]).length;
+    if(open>0&&/[0-9,%²)]$/.test(e))e+=')';
+  }
+  C.expr=e;calcShow();
+}
+function calcBuild(){
+  if(CALC.el)return CALC.el;
+  var el=document.createElement('div');
+  el.id='calc';el.className='calc';el.hidden=true;el.setAttribute('role','dialog');el.setAttribute('aria-label','Kalkulator');
+  var k='';
+  CKEYS.forEach(function(b,i){k+='<button type="button" data-k="'+i+'"'+(b[3]?' class="'+b[3]+'"':'')+(b[4]?' aria-label="'+b[4]+'"':'')+'>'+b[0]+'</button>';});
+  el.innerHTML='<div class="calc-h" id="calc-h"><span>Kalkulator</span><span class="sp"></span><button type="button" class="calc-x" data-cx="1" aria-label="Tutup kalkulator">✕</button></div><div class="calc-d" aria-live="polite"><div class="calc-ex"></div><div class="calc-r">0</div></div><div class="calc-k">'+k+'</div>';
+  document.body.appendChild(el);
+  CALC.el=el;
+  el.addEventListener('click',function(e){
+    var b=e.target.closest('button');if(!b)return;
+    if(b.dataset.cx){toggleCalc();return;}
+    var d=CKEYS[+b.dataset.k];if(d)calcPress(d[1],d[2]);
+  });
+  /* geser lewat judul */
+  var h=el.querySelector('#calc-h'),dx=0,dy=0;
+  h.addEventListener('pointerdown',function(e){
+    if(e.target.closest('button'))return;
+    var r=el.getBoundingClientRect();dx=e.clientX-r.left;dy=e.clientY-r.top;
+    h.classList.add('drag');try{h.setPointerCapture(e.pointerId);}catch(x){}
+    e.preventDefault();
+  });
+  h.addEventListener('pointermove',function(e){
+    if(!h.classList.contains('drag'))return;
+    CALC.x=e.clientX-dx;CALC.y=e.clientY-dy;calcPlace();
+  });
+  function up(){if(!h.classList.contains('drag'))return;h.classList.remove('drag');calcSave();}
+  h.addEventListener('pointerup',up);h.addEventListener('pointercancel',up);
+  calcShow();
+  return el;
+}
+function calcSave(){lsSet('to_calc',{open:CALC.open,x:CALC.x,y:CALC.y});}
+function calcPlace(){
+  var el=CALC.el;if(!el||el.hidden)return;
+  var w=el.offsetWidth,h=el.offsetHeight,vw=window.innerWidth,vh=window.innerHeight;
+  if(CALC.x===null||CALC.y===null){
+    CALC.x=vw>900?vw-w-24:Math.round((vw-w)/2);
+    CALC.y=vw>900?Math.round((vh-h)/2)+30:vh-h-12;
+  }
+  CALC.x=Math.min(Math.max(8,CALC.x),Math.max(8,vw-w-8));
+  CALC.y=Math.min(Math.max(8,CALC.y),Math.max(8,vh-h-8));
+  el.style.left=CALC.x+'px';el.style.top=CALC.y+'px';
+}
+function syncCalc(){
+  var show=CALC.open&&S.view==='exam'&&!!P&&P.subj==='PM';
+  if(!show&&!CALC.el)return;
+  var el=calcBuild();
+  el.hidden=!show;
+  if(show)calcPlace();
+}
+function toggleCalc(){CALC.open=!CALC.open;calcSave();topbar();}
+window.addEventListener('resize',function(){calcPlace();});
+document.addEventListener('keydown',function(e){
+  var C=CALC;if(!C.open||!C.el||C.el.hidden||e.ctrlKey||e.metaKey||e.altKey)return;
+  if($('#layer').firstChild)return;
+  var t=e.target,inCalc=C.el.contains(t),tag=t&&t.tagName;
+  if(!inCalc&&tag&&tag!=='BODY'&&tag!=='HTML')return;
+  var k=e.key,a=null;
+  if(/^[0-9]$/.test(k))a=['num',k];
+  else if(k===','||k==='.')a=['num',','];
+  else if(k==='+')a=['op','+'];
+  else if(k==='-')a=['op','−'];
+  else if(k==='*'||k==='x'||k==='X')a=['op','×'];
+  else if(k==='/')a=['op','÷'];
+  else if(k==='^')a=['op','^'];
+  else if(k==='%')a=['pct',''];
+  else if(k==='(')a=['lp',''];
+  else if(k===')')a=['rp',''];
+  else if(k==='Enter'||k==='=')a=['eq',''];
+  else if(k==='Backspace')a=['bs',''];
+  else if(k==='Delete'||k==='Escape')a=['clr',''];
+  if(!a)return;
+  e.preventDefault();calcPress(a[0],a[1]);
+});
 
 if(location.hash==='#riwayat')S.view='history';
 if(P&&P.end<=Date.now()&&false){}
