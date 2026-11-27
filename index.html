@@ -2561,3 +2561,419 @@ new MutationObserver(cek).observe(root,{attributes:true,attributeFilter:['data-s
 cek();
 })();
 </script>
+<style>
+/* ===== Kado kejutan tema Natal ===== */
+#kado-btn{position:fixed;right:max(10px,env(safe-area-inset-right,0px));bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:36;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:0;padding:4px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#kado-btn span{background:#fff;color:#B3122E;font:800 13px/1 system-ui,sans-serif;padding:6px 10px;border-radius:999px;border:2px solid #D7263D;box-shadow:0 3px 10px rgba(0,0,0,.25);white-space:nowrap;animation:kd-naik 1.1s ease-in-out infinite alternate}
+#kado-btn svg{display:block;overflow:visible;filter:drop-shadow(0 4px 6px rgba(0,0,0,.35));transform-origin:50% 100%;animation:kd-goyang 2.6s ease-in-out infinite}
+#kado-btn:hover .kd-tutupnya,#kado-btn:active .kd-tutupnya{transform:translateY(-5px) rotate(-6deg)}
+.kd-tutupnya{transition:transform .2s;transform-origin:32px 30px}
+html:root[data-skin="natal"]:has(.exam) #kado-btn,html:root[data-skin="natal"]:has(.modal) #kado-btn{display:none}
+html.kado-buka,html.kado-buka body{overflow:hidden}
+html.kado-buka #natal-bg,html.kado-buka #natal-fg{visibility:hidden}
+#kado-layar{position:fixed;inset:0;z-index:210;display:flex;align-items:center;justify-content:center;padding:8px;background:rgba(2,6,12,.88);animation:kd-masuk .25s ease-out}
+#kado-layar .kd-jendela{width:100%;max-width:560px;height:min(900px,100%);display:flex;flex-direction:column;background:#050911;color:#E6EDF3;border:1px solid #22303F;border-radius:14px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.6)}
+#kado-layar .kd-atas,#kado-layar .kd-bawah{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#101823;font:600 13px/1.2 ui-monospace,SFMono-Regular,Menlo,Consolas,'Courier New',monospace}
+#kado-layar .kd-titik{display:flex;gap:6px}#kado-layar .kd-titik i{width:11px;height:11px;border-radius:50%;background:#FF5F57}#kado-layar .kd-titik i:nth-child(2){background:#FEBC2E}#kado-layar .kd-titik i:nth-child(3){background:#28C840}
+#kado-layar .kd-nama{flex:1;color:#9FB0C0}#kado-layar .kd-status{flex:1;color:#FFC45A}
+#kado-layar button{font:700 13px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,'Courier New',monospace;color:#E6EDF3;background:#1D2937;border:1px solid #34465A;border-radius:8px;padding:9px 12px;cursor:pointer}
+#kado-layar button[hidden]{display:none}#kado-layar .kd-ulang{background:#B3122E;border-color:#E8475A;color:#fff}
+#kado-layar .kd-isi{flex:1;min-height:0;display:flex;flex-direction:column}
+#kado-layar .kd-panggung{position:relative;flex:1;min-height:0;min-width:0;display:flex;align-items:flex-start;justify-content:center;overflow:hidden}
+#kado-layar canvas{display:block}
+#kado-layar canvas.kd-cahaya{position:absolute;top:0;pointer-events:none;mix-blend-mode:screen;opacity:.85}
+#kado-layar .kd-hud,#kado-layar .kd-jam{position:absolute;font:600 10px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,'Courier New',monospace;color:#7C8CA0;white-space:pre;pointer-events:none;text-shadow:0 0 4px #050911,0 0 4px #050911}
+#kado-layar .kd-hud{left:8px;top:6px}#kado-layar .kd-jam{right:8px;top:6px;color:#FFC45A}
+#kado-layar .kd-pesan{position:absolute;left:0;right:0;bottom:8px;margin:0;display:flex;justify-content:center;white-space:nowrap;text-transform:uppercase;font:900 clamp(13px,4.4vw,20px)/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,'Courier New',monospace;letter-spacing:.08em;pointer-events:none}
+#kado-layar .kd-pesan span{opacity:0;text-shadow:0 0 10px currentColor,0 0 2px currentColor,0 2px 6px #000}
+#kado-layar .kd-pesan span.ada{opacity:1}
+#kado-layar .kd-pesan .w0{color:#FF5A63}#kado-layar .kd-pesan .w1{color:#FFD15C}#kado-layar .kd-pesan .w2{color:#4CE07F}
+#kado-layar .kd-kode{flex:0 0 27%;min-height:96px;max-height:230px;overflow:hidden;padding:4px 0;border-top:1px solid #1D2A38;background:#0A111B;font:500 10.5px/16px ui-monospace,SFMono-Regular,Menlo,Consolas,'Courier New',monospace;color:#C3D0DE;text-align:left;-webkit-mask-image:linear-gradient(#000 72%,transparent);mask-image:linear-gradient(#000 72%,transparent)}
+#kado-layar .kd-kode div{height:16px;white-space:pre;overflow:hidden}#kado-layar .kd-kode div.aktif{background:#162334}
+#kado-layar .kd-kode b{display:inline-block;width:34px;margin-right:10px;text-align:right;font-weight:500;color:#4A5C70}
+#kado-layar .kd-kode i{font-style:normal}#kado-layar .kd-kode .ko{color:#657A91}#kado-layar .kd-kode .st{color:#8FD98A}#kado-layar .kd-kode .kk{color:#FF8A75}#kado-layar .kd-kode .an{color:#FFC76B}#kado-layar .kd-kode .fn{color:#79B8FF}
+@media (orientation:landscape) and (max-height:600px){#kado-layar .kd-jendela{max-width:900px}#kado-layar .kd-isi{flex-direction:row}#kado-layar .kd-kode{flex:0 0 40%;max-height:none;border-top:0;border-left:1px solid #1D2A38}}
+@keyframes kd-masuk{from{opacity:0}}
+@keyframes kd-naik{to{transform:translateY(-4px)}}
+@keyframes kd-goyang{0%,60%,100%{transform:rotate(0)}66%{transform:rotate(-12deg)}72%{transform:rotate(10deg)}78%{transform:rotate(-7deg)}84%{transform:rotate(4deg)}90%{transform:rotate(0)}}
+@media (prefers-reduced-motion:reduce){#kado-btn span,#kado-btn svg,#kado-layar{animation:none!important}}
+</style>
+<script>
+/* Kado kejutan khusus tema Natal: pohon Natal ASCII 3D */
+(function(){
+var root=document.documentElement,tombol=null,layar=null,raf=0;
+var tenang=window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches;
+var TAU=Math.PI*2,SELESAI=14,T_BINTANG=11.1,T_PESAN=12,PESAN='semangat ya belajar nya';
+var HIJAU=0,SALJU=1,BATANG=2,EMAS=3,MERAH=4,PERAK=5,BIRU=6,LAMPU=7,TANAH=8,DAUN=9;
+var WARNA=[[52,200,94],[232,242,255],[150,98,58],[255,194,56],[240,50,58],[208,220,238],[66,118,245],[255,224,138],[116,140,176],[30,168,112]];
+var RAMP=['.:;+x*%&#','.\'+*o#@','.:;|%#','.:+*o0@#','.:+oO0@#','.:-=o0@#','.:+=o0%#','+*o@#','..,:;~','.:+x%#'];
+var D=null,N=0,S_=null;
+
+/* ---------- membangun pohon dari ribuan titik ---------- */
+function bangunPohon(){
+  var benih=7,P=[],ujung=[];
+  function acak(){
+    benih=(benih+0x6D2B79F5)|0;
+    var t=Math.imul(benih^(benih>>>15),1|benih);
+    t=(t+Math.imul(t^(t>>>7),61|t))^t;
+    return ((t^(t>>>14))>>>0)/4294967296;
+  }
+  function titik(x,y,z,nx,ny,nz,warna,terang,lahir,jenis,cx,cy,cz){
+    var n=Math.sqrt(nx*nx+ny*ny+nz*nz)||1;
+    P.push(x,y,z,nx/n,ny/n,nz/n,warna,terang,lahir,acak(),jenis||0,cx||0,cy||0,cz||0);
+  }
+  function jari(y){ // lebar pohon pada ketinggian y
+    var u=Math.min(1,Math.max(0,(y-0.17)/0.82));
+    return 0.47*Math.pow(1-u,0.92)+0.028;
+  }
+  var i,k,b;
+
+  // hamparan salju di tanah
+  for(i=0;i<1900;i++){
+    var g=acak()*TAU,r=Math.sqrt(acak())*0.72;
+    titik(Math.cos(g)*r,-0.008,Math.sin(g)*r,0,1,0,TANAH,0.62-r*0.55,0.1+r*0.8);
+  }
+  // batang
+  for(i=0;i<900;i++){
+    var s=acak()*TAU,h=acak()*0.22;
+    titik(Math.cos(s)*0.058,h,Math.sin(s)*0.058,Math.cos(s),0.1,Math.sin(s),
+      BATANG,0.75+0.25*Math.sin(s*14),0.35+h*2.4);
+  }
+  // dahan: berlapis, menjuntai, makin lebat di bawah
+  for(i=0;i<25;i++){
+    var y=0.18+i*0.0325,u=i/24,R=jari(y),jumlah=Math.round(13-7*u);
+    for(b=0;b<jumlah;b++){
+      var a=TAU*(b+acak()*0.55)/jumlah+i*0.77,L=R*(0.84+acak()*0.27);
+      var dx=Math.cos(a),dz=Math.sin(a),banyak=Math.round(34+270*L);
+      for(k=0;k<banyak;k++){
+        var t=Math.pow(acak(),0.62),sisi=(acak()-acak())*(0.02+L*0.17)*(1.15-t*0.8);
+        var py=y+0.07*L*t-0.2*L*t*t+(acak()-0.5)*0.028;
+        var bersalju=t>0.84&&acak()<0.08;
+        titik(dx*t*L-dz*sisi, py+(bersalju?0.006:0), dz*t*L+dx*sisi,
+          dx*0.75-dz*sisi*5, 0.5+(acak()-0.5)*0.9, dz*0.75+dx*sisi*5,
+          bersalju?SALJU:(acak()<0.2?DAUN:HIJAU), bersalju?0.9:0.46+0.74*Math.pow(t,1.3),
+          0.8+5.1*u+t*0.28+acak()*0.18);
+      }
+      ujung.push([dx*L*1.01,y-0.13*L+0.008,dz*L*1.01]);
+      ujung.push([dx*L*0.66,y-0.04*L+0.022,dz*L*0.66]);
+    }
+  }
+  // isi bagian dalam supaya tidak tembus
+  for(i=0;i<6000;i++){
+    var v=acak(),yy=0.18+v*0.8,q=acak()*TAU,rr=jari(yy)*(0.25+0.35*acak());
+    titik(Math.cos(q)*rr,yy,Math.sin(q)*rr,Math.cos(q),0.3,Math.sin(q),HIJAU,0.3,0.9+5.1*v);
+  }
+  // pucuk
+  for(i=0;i<260;i++){
+    var m=acak(),w=acak()*TAU,j=0.035*(1-m);
+    titik(Math.cos(w)*j,0.96+m*0.085,Math.sin(w)*j,Math.cos(w),0.5,Math.sin(w),HIJAU,0.85,5.7+m*0.4);
+  }
+  // pita emas melingkar
+  for(i=0;i<2600;i++){
+    var p=i/2600,gy=0.21+0.7*p-0.028*Math.abs(Math.sin(p*TAU*5.4));
+    var ga=TAU*3.6*p+0.9,gr=jari(gy)*0.98+0.012;
+    titik(Math.cos(ga)*gr+(acak()-0.5)*0.012, gy+(acak()-0.5)*0.012, Math.sin(ga)*gr+(acak()-0.5)*0.012,
+      Math.cos(ga),0.4,Math.sin(ga),EMAS,0.82,5.5+2.3*p);
+  }
+  // bola hias
+  var pilihan=[MERAH,EMAS,MERAH,PERAK];
+  for(k=0;k<36;k++){
+    var f=(k+acak()*0.6)/36,by=0.22+0.64*f,ba=k*2.39996,br=jari(by)*0.95+0.008;
+    var bx=Math.cos(ba)*br,bz=Math.sin(ba)*br,bola=0.021+0.012*acak(),lahir=7.3+2.2*acak();
+    for(i=0;i<110;i++){
+      var ny=1-2*(i+0.5)/110,rn=Math.sqrt(1-ny*ny),th=i*2.39996;
+      var nx=Math.cos(th)*rn,nz=Math.sin(th)*rn;
+      titik(bx+nx*bola,by+ny*bola,bz+nz*bola,nx,ny,nz,pilihan[k%4],1,lahir,2,bx,by,bz);
+    }
+  }
+  // lampu kelap-kelip di ujung dahan
+  var lampu=0;
+  for(i=0;i<170&&ujung.length;i++){
+    var c=ujung.splice(Math.floor(acak()*ujung.length),1)[0],jenis=acak();
+    var wl=jenis<0.74?LAMPU:jenis<0.86?MERAH:EMAS,saat=8.1+3*acak(),fase=acak();
+    for(k=0;k<3;k++){
+      titik(c[0]*1.015+(k-1)*0.006,c[1],c[2]*1.015,0,1,0,wl,fase,saat,1);
+    }
+    lampu++;
+  }
+  // kado di bawah pohon: [sudut, jarak, lebar, tinggi, dalam, putar, warna, pita]
+  var KADO=[[0.3,0.43,0.15,0.13,0.13,0.4,MERAH,EMAS],[1.35,0.52,0.12,0.1,0.12,1.1,BIRU,PERAK],
+    [2.35,0.42,0.17,0.15,0.13,0.2,MERAH,PERAK],[3.35,0.53,0.12,0.11,0.11,0.8,DAUN,EMAS],
+    [4.35,0.44,0.14,0.17,0.12,1.5,BIRU,EMAS],[5.4,0.52,0.13,0.1,0.13,0.6,PERAK,MERAH]];
+  KADO.forEach(function(o,no){
+    var px=Math.cos(o[0])*o[1],pz=Math.sin(o[0])*o[1],cs=Math.cos(o[5]),sn=Math.sin(o[5]);
+    function pasang(x,y,z,nx,ny,nz,warna){
+      titik(px+x*cs-z*sn,y,pz+x*sn+z*cs,nx*cs-nz*sn,ny,nx*sn+nz*cs,warna,0.95,9+no*0.3,3);
+    }
+    for(var i=0;i<900;i++){
+      var muka=i%5,x=(acak()-0.5)*o[2],y=acak()*o[3],z=(acak()-0.5)*o[4];
+      var nx=0,ny=0,nz=0;
+      if(muka===0){x=o[2]/2;nx=1;}else if(muka===1){x=-o[2]/2;nx=-1;}
+      else if(muka===2){z=o[4]/2;nz=1;}else if(muka===3){z=-o[4]/2;nz=-1;}
+      else{y=o[3];ny=1;}
+      var pita=(!nx&&Math.abs(x)<0.017)||(!nz&&Math.abs(z)<0.017);
+      pasang(x,y,z,nx,ny,nz,pita?o[7]:o[6]);
+    }
+    for(i=0;i<90;i++){ // simpul pita
+      var s=i/90*TAU,arah=i%2?1:-1;
+      pasang(arah*(0.026+0.026*Math.cos(s)),o[3]+0.022+0.018*Math.sin(s),(acak()-0.5)*0.012,0,0.7,0.7,o[7]);
+    }
+  });
+  D=new Float32Array(P);N=P.length/14;
+  return lampu;
+}
+
+/* ---------- layar karakter ---------- */
+function siapkan(){
+  var wadah=el('.kd-panggung'),kanvas=el('canvas'),W=wadah.clientWidth,H=wadah.clientHeight;
+  if(W<40||H<40)return;
+  var rasio=Math.min(2,window.devicePixelRatio||1);
+  var lebar=Math.max(3.4,Math.min(7,Math.min(W/88,H/66)));
+  var pw=Math.max(3,Math.round(lebar*rasio)),ph=Math.round(pw*1.5);
+  var cw=pw/rasio,ch=ph/rasio,kol=Math.floor(W/cw),brs=Math.floor(H/ch);
+  kanvas.width=kol*pw;kanvas.height=brs*ph;
+  kanvas.style.width=(kol*cw)+'px';kanvas.style.height=(brs*ch)+'px';
+  // semua huruf digambar sekali, lalu tinggal disalin tiap frame
+  var atlas=document.createElement('canvas');atlas.width=9*pw;atlas.height=WARNA.length*8*ph;
+  var a=atlas.getContext('2d');
+  a.font='900 '+Math.round(ph*0.98)+'px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace';
+  a.textAlign='center';a.textBaseline='middle';
+  WARNA.forEach(function(w,m){
+    for(var l=0;l<8;l++){
+      var f=0.28+0.72*l/7,putih=l===7?0.22:0;
+      a.fillStyle='rgb('+w.map(function(v){return Math.round(v*f+(255-v*f)*putih);}).join(',')+')';
+      for(var c=0;c<9;c++){
+        a.save();a.beginPath();a.rect(c*pw,(m*8+l)*ph,pw,ph);a.clip();
+        a.fillText(RAMP[m].charAt(Math.min(c,RAMP[m].length-1)),(c+0.5)*pw,(m*8+l+0.55)*ph);
+        a.restore();
+      }
+    }
+  });
+  var cahaya=document.createElement('canvas');cahaya.width=kol;cahaya.height=brs;
+  // lapisan cahaya lampu: kanvas kecil yang diperbesar oleh browser (ringan)
+  var kabur=wadah.querySelector('.kd-cahaya')||wadah.appendChild(document.createElement('canvas'));
+  kabur.className='kd-cahaya';kabur.setAttribute('aria-hidden','true');
+  kabur.width=Math.ceil(kol/2.5);kabur.height=Math.ceil(brs/2.5);
+  kabur.style.width=kanvas.style.width;kabur.style.height=kanvas.style.height;
+  kabur.style.left=((W-kol*cw)/2)+'px';
+  var skala=Math.min(W/1.36,(H-58)/1.34);
+  var salju=[],jml=Math.round(kol*brs*0.045);
+  for(var i=0;i<jml;i++)salju.push([Math.random(),Math.random(),0.012+Math.random()*0.06,Math.random()]);
+  var n=kol*brs;
+  S_={k:kanvas,x:kanvas.getContext('2d'),atlas:atlas,pw:pw,ph:ph,cw:cw,ch:ch,kol:kol,brs:brs,skala:skala,
+    tengah:kol*cw/2,dasar:H-50-skala*0.13,salju:salju,
+    z:new Float32Array(n),m:new Uint8Array(n),l:new Uint8Array(n),c:new Uint8Array(n),
+    g:cahaya,gx:cahaya.getContext('2d'),gambar:cahaya.getContext('2d').createImageData(kol,brs),
+    h:kabur,hx:kabur.getContext('2d')};
+}
+function isi(kol,brs,warna,terang,huruf,paksa){
+  var s=S_;
+  if(kol<0||brs<0||kol>=s.kol||brs>=s.brs)return;
+  var k=brs*s.kol+kol;
+  if(!paksa&&s.m[k]!==255)return;
+  s.m[k]=warna;s.l[k]=Math.max(0,Math.min(7,terang*7|0));s.c[k]=huruf;
+}
+
+/* ---------- proyeksi 3D tiap frame ---------- */
+function gambar(t){
+  var s=S_;if(!s)return 0;
+  var putar=t*0.34,cs=Math.cos(putar),sn=Math.sin(putar);
+  var Z=s.z,M=s.m,Lv=s.l,C=s.c;
+  Z.fill(-9);M.fill(255);
+  for(var i=0,p=0;i<N;i++,p+=14){
+    var umur=t-D[p+8];
+    if(umur<0)continue;
+    var x=D[p],y=D[p+1],z=D[p+2],warna=D[p+6],acak=D[p+9],jenis=D[p+10];
+    if(jenis===2&&umur<0.55){ // bola membesar lalu membal
+      var u=umur/0.55-1,besar=1+2.7*u*u*u+1.7*u*u;
+      x=D[p+11]+(x-D[p+11])*besar;y=D[p+12]+(y-D[p+12])*besar;z=D[p+13]+(z-D[p+13])*besar;
+    }
+    if(jenis===3&&umur<0.6){var jatuh=1-umur/0.6;y+=jatuh*jatuh*0.55;}
+    var rx=x*cs+z*sn,rz=z*cs-x*sn,jauh=3.4/(3.4-rz);
+    var kol=(s.tengah+rx*jauh*s.skala)/s.cw|0;
+    var brs=(s.dasar-(y-rz*0.2)*jauh*s.skala)/s.ch|0;
+    if(kol<0||brs<0||kol>=s.kol||brs>=s.brs)continue;
+    var k=brs*s.kol+kol,dalam=jenis===1?rz+0.035:rz;
+    if(dalam<=Z[k])continue;
+    var terang;
+    if(jenis===1){ // lampu
+      terang=0.72+0.38*Math.sin(t*4.2+D[p+7]*TAU)+(umur<0.25?0.5:0);
+    }else{
+      var nx=D[p+3]*cs+D[p+5]*sn,nz=D[p+5]*cs-D[p+3]*sn;
+      var sinar=-0.45*nx+0.55*D[p+4]+0.7*nz;
+      if(sinar<0)sinar=0;
+      terang=D[p+7]*(0.4+0.72*sinar)*(0.88+0.34*rz);
+      if(jenis===2&&sinar>0.93){warna=PERAK;terang=1;}
+      if(warna===EMAS&&jenis===0)terang*=0.85+0.3*Math.sin(t*3+acak*25);
+      if(jenis===0&&umur<0.3&&warna!==TANAH){warna=SALJU;terang=1-umur;} // garis tumbuh
+    }
+    terang=terang<0?0:terang>1?1:terang;
+    var panjang=RAMP[warna].length-1;
+    var huruf=terang*panjang+(acak-0.5)*2.4+0.5|0;
+    Z[k]=dalam;M[k]=warna;Lv[k]=terang*7|0;C[k]=huruf<0?0:huruf>panjang?panjang:huruf;
+  }
+  if(t>T_BINTANG)bintang(t);
+  hujanSalju(t);
+  // salin huruf ke kanvas, kumpulkan cahaya lampu
+  var X=s.x,G=s.gambar.data,pw=s.pw,ph=s.ph,jumlah=0;
+  X.fillStyle='#050911';X.fillRect(0,0,s.k.width,s.k.height);
+  G.fill(0);
+  for(var q=0,r=0;r<s.brs;r++)for(var c=0;c<s.kol;c++,q++){
+    var m=M[q];
+    if(m===255)continue;
+    jumlah++;
+    X.drawImage(s.atlas,C[q]*pw,(m*8+Lv[q])*ph,pw,ph,c*pw,r*ph,pw,ph);
+    if((m===LAMPU||m===EMAS||m===MERAH)&&Lv[q]>3){
+      var w=WARNA[m],j=q*4;
+      G[j]=w[0];G[j+1]=w[1];G[j+2]=w[2];G[j+3]=m===LAMPU?255:120;
+    }
+  }
+  s.gx.putImageData(s.gambar,0,0);
+  s.hx.clearRect(0,0,s.h.width,s.h.height);
+  s.hx.drawImage(s.g,0,0,s.h.width,s.h.height);
+  return jumlah;
+}
+
+/* ---------- bintang di puncak ---------- */
+function bintang(t){
+  var s=S_,umur=t-T_BINTANG,kilat=Math.max(0,1-umur/0.9);
+  var ox=s.tengah,oy=s.dasar-1.1*s.skala,R=s.skala*0.074*(1+kilat*kilat*0.9);
+  var sudut=[],i;
+  for(i=0;i<10;i++){
+    var a=-Math.PI/2+i*Math.PI/5,r=i%2?R*0.45:R;
+    sudut.push([ox+Math.cos(a)*r,oy+Math.sin(a)*r]);
+  }
+  for(var b=(oy-R)/s.ch|0;b<=(oy+R)/s.ch;b++){
+    for(var k=(ox-R)/s.cw|0;k<=(ox+R)/s.cw;k++){
+      var x=(k+0.5)*s.cw,y=(b+0.5)*s.ch,dalam=false;
+      for(var m=0,n=9;m<10;n=m++){
+        var A=sudut[m],B=sudut[n];
+        if((A[1]>y)!==(B[1]>y)&&x<(B[0]-A[0])*(y-A[1])/(B[1]-A[1])+A[0])dalam=!dalam;
+      }
+      if(dalam)isi(k,b,kilat>0.55?SALJU:EMAS,0.95+0.05*Math.sin(t*5+k),6+((k+b)&1),true);
+    }
+  }
+  for(i=0;i<8;i++){ // pancaran sinar
+    var arah=i*TAU/8+0.12*Math.sin(t*0.7);
+    var sampai=R*(1.55+0.45*Math.sin(t*3+i*1.3)+kilat*3.2);
+    for(var d=R*1.1;d<sampai;d+=s.cw){
+      isi((ox+Math.cos(arah)*d)/s.cw|0,(oy+Math.sin(arah)*d)/s.ch|0,LAMPU,1-d/sampai*0.65,d<R*1.5?1:0,false);
+    }
+  }
+}
+
+/* ---------- salju turun ---------- */
+function hujanSalju(t){
+  var s=S_;
+  for(var i=0;i<s.salju.length;i++){
+    var f=s.salju[i],dekat=f[3];
+    var y=(f[1]+t*f[2])%1,x=(f[0]+Math.sin(t*0.8+i)*0.012+1)%1;
+    var depan=dekat>0.93;
+    isi(x*s.kol|0,y*s.brs|0,SALJU,depan?0.95:0.12+dekat*0.5,depan?3:dekat>0.6?2:0,depan);
+  }
+}
+
+/* ---------- panel kode berjalan ---------- */
+function esc(x){return x.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function sorot(baris){
+  var pola=/(\/\/.*$|\/\*.*?\*\/)|('(?:[^'\\]|\\.)*')|\b(var|function|for|if|else|return|new|continue)\b|\b(\d+(?:\.\d+)?)\b|\b([A-Za-z_]\w*)(?=\()/g;
+  var hasil='',akhirnya=0,c;
+  while((c=pola.exec(baris))){
+    var kelas=c[1]?'ko':c[2]?'st':c[3]?'kk':c[4]?'an':'fn';
+    hasil+=esc(baris.slice(akhirnya,c.index))+'<i class="'+kelas+'">'+esc(c[0])+'</i>';
+    akhirnya=pola.lastIndex;
+  }
+  return hasil+esc(baris.slice(akhirnya));
+}
+var BARIS=null;
+function tulisKode(no){
+  var kotak=el('.kd-kode'),muat=Math.ceil(kotak.clientHeight/16)+1,h='';
+  for(var i=0;i<muat;i++){
+    var n=(no+i)%BARIS.length;
+    h+='<div'+(i===3?' class="aktif"':'')+'><b>'+(n+1)+'</b>'+sorot(BARIS[n])+'</div>';
+  }
+  kotak.innerHTML=h;
+}
+
+/* ---------- jalannya animasi ---------- */
+var waktu=0,sebelum=0,beban=0,jeda=31,lampuAda=0,barisTerakhir=-1,hurufTampil=-1,selesaiSudah=false,hudTerakhir=0;
+function el(q){return layar.querySelector(q);}
+function perbarui(){
+  var jumlah=gambar(waktu);
+  var tampil=Math.max(0,Math.min(PESAN.length+1,(waktu-T_PESAN)*14|0));
+  if(tampil!==hurufTampil){
+    hurufTampil=tampil;
+    var huruf=el('.kd-pesan').children;
+    for(var i=0;i<huruf.length;i++)huruf[i].classList.toggle('ada',i<tampil);
+  }
+  var no=waktu*3.4|0;
+  if(no!==barisTerakhir){barisTerakhir=no;tulisKode(no);}
+  if(Math.abs(waktu-hudTerakhir)>0.12){
+    hudTerakhir=waktu;
+    el('.kd-jam').textContent='t '+(waktu<10?'0':'')+waktu.toFixed(2)+'s';
+    var nyala=Math.round(lampuAda*Math.max(0,Math.min(1,(waktu-8.1)/3)));
+    el('.kd-hud').textContent='rotasi '+(waktu*0.34*180/Math.PI%360).toFixed(1)+'°\nlampu  '+nyala+'\nhuruf  '+jumlah;
+  }
+  var beres=waktu>=SELESAI;
+  if(beres!==selesaiSudah){
+    selesaiSudah=beres;
+    el('.kd-lewati').hidden=beres;el('.kd-ulang').hidden=!beres;
+    el('.kd-status').textContent=beres?'● selesai':'● running';
+  }
+}
+function putaran(kini){
+  if(!layar)return;
+  raf=requestAnimationFrame(putaran);
+  if(sebelum&&kini-sebelum<jeda)return; // 30 frame per detik, 20 kalau perangkat lambat
+  waktu+=sebelum?Math.min(0.1,(kini-sebelum)/1000):0;
+  sebelum=kini;
+  var mulai=performance.now();
+  perbarui();
+  beban=beban*0.9+(performance.now()-mulai)*0.1;
+  jeda=beban>24?48:31;
+}
+function lompat(ke){
+  waktu=ke;hurufTampil=-1;barisTerakhir=-1;hudTerakhir=-9;
+  if(tenang)perbarui();
+}
+function ukuran(){if(!layar)return;siapkan();barisTerakhir=-1;if(tenang)perbarui();}
+function buka(){
+  if(layar)return;
+  if(!D){
+    lampuAda=bangunPohon();
+    BARIS=[bangunPohon,gambar,bintang,hujanSalju,siapkan].map(String).join('\n\n').split('\n');
+  }
+  layar=document.createElement('div');layar.id='kado-layar';
+  layar.setAttribute('role','dialog');layar.setAttribute('aria-modal','true');
+  layar.setAttribute('aria-label','Isi kado');layar.setAttribute('data-lenis-prevent','');
+  var huruf=PESAN.split('').map(function(h,i){return '<span class="w'+((i/2|0)%3)+'">'+(h===' '?'&nbsp;':h)+'</span>';}).join('')+'<span class="w0">&nbsp;&lt;3</span>';
+  layar.innerHTML='<div class="kd-jendela"><div class="kd-atas"><span class="kd-titik"><i></i><i></i><i></i></span><span class="kd-nama">buka_kado.js</span><button type="button" class="kd-x" aria-label="Tutup kado">✕</button></div>'+
+    '<div class="kd-isi"><div class="kd-panggung"><canvas aria-hidden="true"></canvas><div class="kd-hud" aria-hidden="true"></div><div class="kd-jam" aria-hidden="true"></div>'+
+    '<p class="kd-pesan" aria-label="'+PESAN+'">'+huruf+'</p></div><div class="kd-kode" aria-hidden="true"></div></div>'+
+    '<div class="kd-bawah"><span class="kd-status">● running</span><button type="button" class="kd-lewati">Lewati ▸▸</button><button type="button" class="kd-ulang" hidden>↻ Putar lagi</button></div></div>';
+  document.body.appendChild(layar);root.classList.add('kado-buka');
+  el('.kd-x').addEventListener('click',tutup);
+  el('.kd-lewati').addEventListener('click',function(){lompat(SELESAI+0.2);el('.kd-x').focus();});
+  el('.kd-ulang').addEventListener('click',function(){lompat(0);el('.kd-x').focus();});
+  layar.addEventListener('click',function(e){if(e.target===layar)tutup();});
+  el('.kd-x').focus();
+  waktu=tenang?SELESAI+1:0;sebelum=0;hurufTampil=-1;barisTerakhir=-1;hudTerakhir=-9;selesaiSudah=false;
+  siapkan();
+  if(tenang)perbarui();else raf=requestAnimationFrame(putaran);
+}
+function tutup(){
+  if(!layar)return;
+  cancelAnimationFrame(raf);layar.remove();layar=null;S_=null;
+  root.classList.remove('kado-buka');
+  if(tombol)tombol.focus({preventScroll:true});
+}
+var IKON='<svg viewBox="0 0 64 64" width="64" height="64" aria-hidden="true"><rect x="9" y="28" width="46" height="32" rx="4" fill="#D7263D"/><rect x="28" y="28" width="8" height="32" fill="#FFD35A"/><g class="kd-tutupnya"><rect x="5" y="18" width="54" height="13" rx="4" fill="#E8475A"/><rect x="28" y="18" width="8" height="13" fill="#FFD35A"/><path d="M32 18C22 2 10 8 17 15c4 4 11 3 15 3zM32 18C42 2 54 8 47 15c-4 4-11 3-15 3z" fill="#FFD35A" stroke="#C99416" stroke-width="2" stroke-linejoin="round"/></g></svg>';
+function cek(){var mau=root.getAttribute('data-skin')==='natal';
+ if(mau&&!tombol){tombol=document.createElement('button');tombol.type='button';tombol.id='kado-btn';tombol.setAttribute('aria-label','Buka kado: open here');tombol.innerHTML='<span>open here</span>'+IKON;tombol.addEventListener('click',buka);document.body.appendChild(tombol);}
+ else if(!mau&&tombol){tutup();tombol.remove();tombol=null;}}
+window.addEventListener('keydown',function(e){if(layar&&e.key==='Escape'){e.preventDefault();e.stopPropagation();tutup();}},true);
+window.addEventListener('resize',ukuran);
+new MutationObserver(cek).observe(root,{attributes:true,attributeFilter:['data-skin']});
+cek();
+})();
+</script>
